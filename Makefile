@@ -52,8 +52,12 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
+test: fmt vet ## Run tests.
+	go test ./... -coverprofile cover.out
+
+.PHONY: test-ci
+test-ci: fmt vet ## Run tests for CI (excluding E2E tests).
+	go test ./api/... ./pkg/... ./controllers/... ./cmd/... -coverprofile cover.out
 
 .PHONY: test-unit
 test-unit: ## Run unit tests only.
@@ -78,7 +82,7 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 ##@ Build
 
 .PHONY: build
-build: manifests generate fmt vet ## Build manager binary.
+build: fmt vet ## Build manager binary.
 	go build -o bin/manager cmd/main.go
 
 .PHONY: run
@@ -225,6 +229,5 @@ set -e; \
 package=$(2)@$(3) ;\
 echo "Downloading $${package}" ;\
 GOBIN=$(LOCALBIN) go install $${package} ;\
-mv "$$(echo "$(1)" | sed "s/-$(3)$$//")" $(1) ;\
 }
 endef

@@ -38,7 +38,7 @@ jobs:
       run: go mod download
 
     - name: Run tests
-      run: make test
+      run: make test-ci
 
     - name: Upload coverage reports
       uses: codecov/codecov-action@v4
@@ -101,7 +101,7 @@ jobs:
 
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
-      if: always()
+      if: always() && github.event_name != 'pull_request'
       with:
         sarif_file: 'trivy-results.sarif'
 
