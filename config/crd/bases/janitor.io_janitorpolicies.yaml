@@ -4,9 +4,10 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-  name: janitorpolicies.ops.k8s.io
+    api-approved.kubernetes.io: "https://github.com/automationpi/kubejanitor"
+  name: janitorpolicies.janitor.io
 spec:
-  group: ops.k8s.io
+  group: janitor.io
   names:
     kind: JanitorPolicy
     listKind: JanitorPolicyList

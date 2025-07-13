@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -130,7 +131,7 @@ var _ = Describe("KubeJanitor E2E Tests", func() {
 					},
 					Resources: corev1.ResourceRequirements{
 						Requests: corev1.ResourceList{
-							corev1.ResourceStorage: mustParseQuantity("1Gi"),
+							corev1.ResourceStorage: *mustParseQuantity("1Gi"),
 						},
 					},
 				},
@@ -173,7 +174,7 @@ var _ = Describe("KubeJanitor E2E Tests", func() {
 					Namespace: namespace.Name,
 					Labels: map[string]string{
 						"janitor.k8s.io/keep": "true",
-						"test":                 "e2e",
+						"test":                "e2e",
 					},
 				},
 				Spec: corev1.PersistentVolumeClaimSpec{
@@ -182,7 +183,7 @@ var _ = Describe("KubeJanitor E2E Tests", func() {
 					},
 					Resources: corev1.ResourceRequirements{
 						Requests: corev1.ResourceList{
-							corev1.ResourceStorage: mustParseQuantity("1Gi"),
+							corev1.ResourceStorage: *mustParseQuantity("1Gi"),
 						},
 					},
 				},
@@ -288,8 +289,7 @@ var _ = Describe("KubeJanitor E2E Tests", func() {
 })
 
 // Helper function to parse resource quantities
-func mustParseQuantity(s string) corev1.ResourceList {
-	return corev1.ResourceList{
-		corev1.ResourceStorage: resource.MustParse(s),
-	}
+func mustParseQuantity(s string) *resource.Quantity {
+	q := resource.MustParse(s)
+	return &q
 }

@@ -67,7 +67,7 @@ func (e *Engine) registerCleaners() {
 // Execute runs the cleanup process based on the policy configuration
 func (e *Engine) Execute(ctx context.Context, cleanupCtx *Context) (*opsv1alpha1.CleanupStats, error) {
 	log := cleanupCtx.Logger.WithName("cleanup-engine")
-	
+
 	stats := &opsv1alpha1.CleanupStats{
 		ByResourceType: make(map[string]opsv1alpha1.ResourceTypeStats),
 	}
@@ -162,7 +162,7 @@ func (e *Engine) Execute(ctx context.Context, cleanupCtx *Context) (*opsv1alpha1
 		}
 	}
 
-	log.Info("Cleanup execution completed", 
+	log.Info("Cleanup execution completed",
 		"totalScanned", stats.ResourcesScanned,
 		"totalCleaned", stats.ResourcesCleaned,
 		"totalErrors", stats.ErrorsEncountered)
@@ -191,7 +191,7 @@ func (e *Engine) executeCleaner(ctx context.Context, cleanupCtx *Context, cleane
 		stats.ByResourceType[cleanerName] = *resourceStats
 	}
 
-	log.Info("Cleaner execution completed", 
+	log.Info("Cleaner execution completed",
 		"duration", duration,
 		"scanned", resourceStats.Scanned,
 		"cleaned", resourceStats.Cleaned,

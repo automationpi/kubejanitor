@@ -7,8 +7,6 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	opsv1alpha1 "github.com/automationpi/kubejanitor/api/v1alpha1"
 )
@@ -117,10 +115,10 @@ func (c *PVCCleaner) Execute(ctx context.Context, cleanupCtx *Context) (*opsv1al
 		stats.Cleaned++
 	}
 
-	log.Info("PVC cleanup completed", 
-		"scanned", stats.Scanned, 
-		"cleaned", stats.Cleaned, 
-		"skipped", stats.Skipped, 
+	log.Info("PVC cleanup completed",
+		"scanned", stats.Scanned,
+		"cleaned", stats.Cleaned,
+		"skipped", stats.Skipped,
 		"errors", stats.Errors)
 
 	return stats, nil
@@ -171,9 +169,9 @@ func (c *PVCCleaner) isSystemPVC(pvc *corev1.PersistentVolumeClaim) bool {
 			// Additional checks for system storage classes
 			if pvc.Spec.StorageClassName != nil {
 				storageClass := *pvc.Spec.StorageClassName
-				if strings.Contains(storageClass, "system") || 
-				   strings.Contains(storageClass, "default") ||
-				   strings.Contains(storageClass, "gp2") {
+				if strings.Contains(storageClass, "system") ||
+					strings.Contains(storageClass, "default") ||
+					strings.Contains(storageClass, "gp2") {
 					return false // These are user PVCs, not system PVCs
 				}
 			}

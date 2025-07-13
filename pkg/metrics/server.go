@@ -65,7 +65,7 @@ func (s *Server) RecordCleanupMetrics(stats *opsv1alpha1.CleanupStats, err error
 	for resourceType, resourceStats := range stats.ByResourceType {
 		s.resourcesScanned.WithLabelValues(resourceType, "", "").Add(float64(resourceStats.Scanned))
 		s.resourcesCleaned.WithLabelValues(resourceType, "", "").Add(float64(resourceStats.Cleaned))
-		
+
 		if resourceStats.Errors > 0 {
 			s.errorsTotal.WithLabelValues(resourceType, "", "", "resource_error").Add(float64(resourceStats.Errors))
 		}

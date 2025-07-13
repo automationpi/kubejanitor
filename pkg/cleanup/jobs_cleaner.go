@@ -5,8 +5,6 @@ import (
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	opsv1alpha1 "github.com/automationpi/kubejanitor/api/v1alpha1"
 )
@@ -94,10 +92,10 @@ func (c *JobsCleaner) Execute(ctx context.Context, cleanupCtx *Context) (*opsv1a
 		stats.Cleaned++
 	}
 
-	log.Info("Jobs cleanup completed", 
-		"scanned", stats.Scanned, 
-		"cleaned", stats.Cleaned, 
-		"skipped", stats.Skipped, 
+	log.Info("Jobs cleanup completed",
+		"scanned", stats.Scanned,
+		"cleaned", stats.Cleaned,
+		"skipped", stats.Skipped,
 		"errors", stats.Errors)
 
 	return stats, nil
@@ -165,7 +163,7 @@ func (c *JobsCleaner) isJobComplete(job *batchv1.Job) bool {
 }
 
 // isJobFailed checks if a Job has failed
-func (c *JobsFailed) isJobFailed(job *batchv1.Job) bool {
+func (c *JobsCleaner) isJobFailed(job *batchv1.Job) bool {
 	for _, condition := range job.Status.Conditions {
 		if condition.Type == batchv1.JobFailed && condition.Status == "True" {
 			return true

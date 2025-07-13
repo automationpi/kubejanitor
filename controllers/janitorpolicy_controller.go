@@ -16,7 +16,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	opsv1alpha1 "github.com/automationpi/kubejanitor/api/v1alpha1"
 	"github.com/automationpi/kubejanitor/pkg/cleanup"
@@ -200,10 +199,10 @@ func (r *JanitorPolicyReconciler) executeCleanup(ctx context.Context, janitorPol
 
 	// Create cleanup context
 	cleanupCtx := &cleanup.Context{
-		Client:       r.Client,
-		Policy:       janitorPolicy,
-		DryRun:       janitorPolicy.Spec.DryRun,
-		Logger:       log,
+		Client:        r.Client,
+		Policy:        janitorPolicy,
+		DryRun:        janitorPolicy.Spec.DryRun,
+		Logger:        log,
 		EventRecorder: r.Recorder,
 	}
 
@@ -229,10 +228,10 @@ func (r *JanitorPolicyReconciler) executeCleanup(ctx context.Context, janitorPol
 		r.updateCondition(&updatedPolicy, ConditionTypeReady, metav1.ConditionFalse, ReasonFailed, err.Error())
 		r.Recorder.Event(&updatedPolicy, EventTypeWarning, ReasonFailed, fmt.Sprintf("Cleanup failed: %v", err))
 	} else {
-		updatedPolicy.Status.Message = fmt.Sprintf("Cleanup completed successfully. Resources scanned: %d, cleaned: %d", 
+		updatedPolicy.Status.Message = fmt.Sprintf("Cleanup completed successfully. Resources scanned: %d, cleaned: %d",
 			stats.ResourcesScanned, stats.ResourcesCleaned)
 		r.updateCondition(&updatedPolicy, ConditionTypeReady, metav1.ConditionTrue, ReasonSucceeded, "Cleanup completed successfully")
-		r.Recorder.Event(&updatedPolicy, EventTypeNormal, ReasonSucceeded, 
+		r.Recorder.Event(&updatedPolicy, EventTypeNormal, ReasonSucceeded,
 			fmt.Sprintf("Cleanup completed. Scanned: %d, Cleaned: %d", stats.ResourcesScanned, stats.ResourcesCleaned))
 	}
 
@@ -254,17 +253,17 @@ func (r *JanitorPolicyReconciler) executeCleanup(ctx context.Context, janitorPol
 		r.metricsServer.RecordCleanupMetrics(stats, err)
 	}
 
-	log.Info("Cleanup execution completed", 
-		"duration", duration, 
-		"scanned", stats.ResourcesScanned, 
+	log.Info("Cleanup execution completed",
+		"duration", duration,
+		"scanned", stats.ResourcesScanned,
 		"cleaned", stats.ResourcesCleaned,
 		"errors", stats.ErrorsEncountered)
 }
 
 // updateCondition updates the condition in the JanitorPolicy status
-func (r *JanitorPolicyReconciler) updateCondition(janitorPolicy *opsv1alpha1.JanitorPolicy, 
+func (r *JanitorPolicyReconciler) updateCondition(janitorPolicy *opsv1alpha1.JanitorPolicy,
 	conditionType string, status metav1.ConditionStatus, reason, message string) {
-	
+
 	condition := metav1.Condition{
 		Type:               conditionType,
 		Status:             status,
