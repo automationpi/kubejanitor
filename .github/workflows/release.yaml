@@ -32,7 +32,7 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
 
     - name: Log in to Container Registry
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
@@ -40,7 +40,7 @@ jobs:
 
     - name: Extract metadata
       id: meta
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@v6
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
@@ -50,11 +50,11 @@ jobs:
           type=semver,pattern={{major}}
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
 
     - name: Build and push Docker image
       id: build
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         platforms: linux/amd64,linux/arm64
@@ -76,7 +76,7 @@ jobs:
       uses: azure/setup-kubectl@v3
 
     - name: Create kind cluster
-      uses: helm/kind-action@v1.8.0
+      uses: helm/kind-action@v1.10.0
       with:
         cluster_name: release-test
 
@@ -130,7 +130,7 @@ jobs:
         helm package helm-charts/kubejanitor-operator
 
     - name: Run chart-releaser
-      uses: helm/chart-releaser-action@v1.5.0
+      uses: helm/chart-releaser-action@v1.6.0
       env:
         CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       with:
@@ -154,7 +154,7 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
 
     - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v5
+      uses: goreleaser/goreleaser-action@v6
       with:
         distribution: goreleaser
         version: latest
@@ -187,7 +187,7 @@ jobs:
         find docs -name "*.md" -type f -exec sed -i "s/kubejanitor:[^[:space:]]*/kubejanitor:${TAG}/g" {} +
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "docs: update version references to ${{ github.ref_name }}"
@@ -218,7 +218,7 @@ jobs:
         output: 'trivy-results.sarif'
 
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
 
