@@ -1,0 +1,193 @@
+{{- if .Values.defaultPolicy.create -}}
+apiVersion: ops.k8s.io/v1alpha1
+kind: JanitorPolicy
+metadata:
+  name: {{ .Values.defaultPolicy.name }}
+  namespace: {{ .Values.defaultPolicy.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "kubejanitor-operator.labels" . | nindent 4 }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  dryRun: {{ .Values.defaultPolicy.dryRun }}
+  {{- with .Values.defaultPolicy.schedule }}
+  schedule: {{ . | quote }}
+  {{- end }}
+  
+  cleanup:
+    {{- if .Values.defaultPolicy.cleanup.pvc.enabled }}
+    pvc:
+      enabled: {{ .Values.defaultPolicy.cleanup.pvc.enabled }}
+      {{- with .Values.defaultPolicy.cleanup.pvc.unusedFor }}
+      unusedFor: {{ . }}
+      {{- end }}
+      {{- with .Values.defaultPolicy.cleanup.pvc.ignorePatterns }}
+      ignorePatterns:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.jobs.enabled }}
+    jobs:
+      enabled: {{ .Values.defaultPolicy.cleanup.jobs.enabled }}
+      {{- with .Values.defaultPolicy.cleanup.jobs.olderThan }}
+      olderThan: {{ . }}
+      {{- end }}
+      {{- with .Values.defaultPolicy.cleanup.jobs.statuses }}
+      statuses:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.defaultPolicy.cleanup.jobs.keepSuccessfulJobs }}
+      keepSuccessfulJobs: {{ . }}
+      {{- end }}
+      {{- with .Values.defaultPolicy.cleanup.jobs.keepFailedJobs }}
+      keepFailedJobs: {{ . }}
+      {{- end }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.configMaps.enabled }}
+    configMaps:
+      enabled: {{ .Values.defaultPolicy.cleanup.configMaps.enabled }}
+      {{- with .Values.defaultPolicy.cleanup.configMaps.olderThan }}
+      olderThan: {{ . }}
+      {{- end }}
+      checkReferences: {{ .Values.defaultPolicy.cleanup.configMaps.checkReferences }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.secrets.enabled }}
+    secrets:
+      enabled: {{ .Values.defaultPolicy.cleanup.secrets.enabled }}
+      {{- with .Values.defaultPolicy.cleanup.secrets.olderThan }}
+      olderThan: {{ . }}
+      {{- end }}
+      checkReferences: {{ .Values.defaultPolicy.cleanup.secrets.checkReferences }}
+      {{- with .Values.defaultPolicy.cleanup.secrets.excludeTypes }}
+      excludeTypes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.services.enabled }}
+    services:
+      enabled: {{ .Values.defaultPolicy.cleanup.services.enabled }}
+      checkEndpoints: {{ .Values.defaultPolicy.cleanup.services.checkEndpoints }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.tlsSecrets.enabled }}
+    tlsSecrets:
+      enabled: {{ .Values.defaultPolicy.cleanup.tlsSecrets.enabled }}
+      expiredOnly: {{ .Values.defaultPolicy.cleanup.tlsSecrets.expiredOnly }}
+      {{- with .Values.defaultPolicy.cleanup.tlsSecrets.expiringWithin }}
+      expiringWithin: {{ . }}
+      {{- end }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.terminatingPods.enabled }}
+    terminatingPods:
+      enabled: {{ .Values.defaultPolicy.cleanup.terminatingPods.enabled }}
+      {{- with .Values.defaultPolicy.cleanup.terminatingPods.stuckFor }}
+      stuckFor: {{ . }}
+      {{- end }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.crashLoopPods.enabled }}
+    crashLoopPods:
+      enabled: {{ .Values.defaultPolicy.cleanup.crashLoopPods.enabled }}
+      restartThreshold: {{ .Values.defaultPolicy.cleanup.crashLoopPods.restartThreshold }}
+      action: {{ .Values.defaultPolicy.cleanup.crashLoopPods.action }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.resourceGaps.enabled }}
+    resourceGaps:
+      enabled: {{ .Values.defaultPolicy.cleanup.resourceGaps.enabled }}
+      {{- with .Values.defaultPolicy.cleanup.resourceGaps.check }}
+      check:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      reportOnly: {{ .Values.defaultPolicy.cleanup.resourceGaps.reportOnly }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.rbacCheck.enabled }}
+    rbacCheck:
+      enabled: {{ .Values.defaultPolicy.cleanup.rbacCheck.enabled }}
+      fixMode: {{ .Values.defaultPolicy.cleanup.rbacCheck.fixMode }}
+    {{- end }}
+    
+    {{- if .Values.defaultPolicy.cleanup.staleHelmReleases.enabled }}
+    staleHelmReleases:
+      enabled: {{ .Values.defaultPolicy.cleanup.staleHelmReleases.enabled }}
+      failedOnly: {{ .Values.defaultPolicy.cleanup.staleHelmReleases.failedOnly }}
+      {{- with .Values.defaultPolicy.cleanup.staleHelmReleases.olderThan }}
+      olderThan: {{ . }}
+      {{- end }}
+    {{- end }}
+  
+  {{- with .Values.defaultPolicy.protectedLabels }}
+  protectedLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  
+  {{- with .Values.defaultPolicy.ignoreNamespaces }}
+  ignoreNamespaces:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  
+  {{- if or .Values.backup.enabled .Values.notifications.slack.enabled .Values.notifications.email.enabled .Values.notifications.webhook.enabled }}
+  {{- if .Values.backup.enabled }}
+  backupConfig:
+    enabled: {{ .Values.backup.enabled }}
+    type: {{ .Values.backup.type }}
+    location: {{ .Values.backup.location }}
+    retentionDays: {{ .Values.backup.retentionDays }}
+  {{- end }}
+  
+  {{- if or .Values.notifications.slack.enabled .Values.notifications.email.enabled .Values.notifications.webhook.enabled }}
+  notificationConfig:
+    {{- if .Values.notifications.slack.enabled }}
+    slack:
+      enabled: {{ .Values.notifications.slack.enabled }}
+      {{- with .Values.notifications.slack.webhookURL }}
+      webhookURL: {{ . }}
+      {{- end }}
+      {{- with .Values.notifications.slack.channel }}
+      channel: {{ . }}
+      {{- end }}
+    {{- end }}
+    
+    {{- if .Values.notifications.email.enabled }}
+    email:
+      enabled: {{ .Values.notifications.email.enabled }}
+      {{- with .Values.notifications.email.smtpServer }}
+      smtpServer: {{ . }}
+      {{- end }}
+      {{- with .Values.notifications.email.smtpPort }}
+      smtpPort: {{ . }}
+      {{- end }}
+      {{- with .Values.notifications.email.username }}
+      username: {{ . }}
+      {{- end }}
+      {{- with .Values.notifications.email.password }}
+      password: {{ . }}
+      {{- end }}
+      {{- with .Values.notifications.email.to }}
+      to:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    
+    {{- if .Values.notifications.webhook.enabled }}
+    webhook:
+      enabled: {{ .Values.notifications.webhook.enabled }}
+      {{- with .Values.notifications.webhook.url }}
+      url: {{ . }}
+      {{- end }}
+      {{- with .Values.notifications.webhook.headers }}
+      headers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}

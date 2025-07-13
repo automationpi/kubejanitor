@@ -1,0 +1,320 @@
+# Default values for kubejanitor-operator.
+# This is a YAML-formatted file.
+# Declare variables to be substituted into your templates.
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# Image configuration
+image:
+  registry: ghcr.io
+  repository: automationpi/kubejanitor
+  tag: ""  # Defaults to appVersion from Chart.yaml
+  pullPolicy: IfNotPresent
+
+# Service account configuration
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# RBAC configuration
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+
+# Security context for the container
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod labels
+podLabels: {}
+
+# Number of replicas
+replicaCount: 1
+
+# Deployment strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 1
+
+# Liveness probe
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+# Readiness probe
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8081
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# Metrics configuration
+metrics:
+  enabled: true
+  port: 8080
+  path: /metrics
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    labels: {}
+    annotations: {}
+    interval: 30s
+    scrapeTimeout: 10s
+
+# Webhook configuration (if using admission webhooks)
+webhook:
+  enabled: false
+  port: 9443
+  certManager:
+    enabled: false
+  # Certificate configuration for webhook (if not using cert-manager)
+  certs:
+    # Auto-generate certificates
+    autoGenerate: true
+    # Or provide your own certificates
+    ca: ""
+    cert: ""
+    key: ""
+
+# Manager configuration
+manager:
+  # Enable leader election for controller manager
+  leaderElection: true
+  # Namespace for leader election
+  leaderElectionNamespace: ""
+  # Health probe bind address
+  healthProbeBindAddress: ":8081"
+  # Metrics bind address
+  metricsBindAddress: ":8080"
+  # Log level (debug, info, warn, error)
+  logLevel: info
+  # Log format (json, console)
+  logFormat: json
+
+# Default JanitorPolicy configuration
+defaultPolicy:
+  # Create a default JanitorPolicy
+  create: true
+  name: "default-cleanup"
+  namespace: ""  # Defaults to release namespace
+  
+  # Policy configuration
+  dryRun: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  
+  cleanup:
+    # PVC cleanup
+    pvc:
+      enabled: true
+      unusedFor: "48h"
+      ignorePatterns: []
+    
+    # Jobs cleanup
+    jobs:
+      enabled: true
+      olderThan: "24h"
+      statuses: ["Failed", "Complete"]
+      keepSuccessfulJobs: 1
+      keepFailedJobs: 1
+    
+    # ConfigMaps cleanup
+    configMaps:
+      enabled: false
+      olderThan: "168h"  # 7 days
+      checkReferences: true
+    
+    # Secrets cleanup
+    secrets:
+      enabled: false
+      olderThan: "168h"  # 7 days
+      checkReferences: true
+      excludeTypes:
+        - "kubernetes.io/service-account-token"
+        - "kubernetes.io/dockercfg"
+        - "kubernetes.io/dockerconfigjson"
+    
+    # Services cleanup
+    services:
+      enabled: false
+      checkEndpoints: true
+    
+    # TLS Secrets cleanup
+    tlsSecrets:
+      enabled: false
+      expiredOnly: true
+      expiringWithin: "720h"  # 30 days
+    
+    # Terminating Pods cleanup
+    terminatingPods:
+      enabled: true
+      stuckFor: "15m"
+    
+    # Crash loop pods
+    crashLoopPods:
+      enabled: true
+      restartThreshold: 5
+      action: "alert"  # alert, restart, delete
+    
+    # Resource gaps detection
+    resourceGaps:
+      enabled: false
+      check: ["limits", "requests"]
+      reportOnly: true
+    
+    # RBAC check
+    rbacCheck:
+      enabled: false
+      fixMode: "manual"  # manual, suggest, auto
+    
+    # Stale Helm releases
+    staleHelmReleases:
+      enabled: false
+      failedOnly: true
+      olderThan: "72h"
+  
+  # Protected labels
+  protectedLabels:
+    - "app.kubernetes.io/managed-by=Helm"
+    - "janitor.k8s.io/keep=true"
+    - "velero.io/exclude-from-backup=true"
+  
+  # Ignore namespaces
+  ignoreNamespaces:
+    - "kube-system"
+    - "kube-public"
+    - "kube-node-lease"
+    - "ingress-nginx"
+    - "cert-manager"
+    - "prometheus"
+    - "grafana"
+    - "jaeger"
+    - "istio-system"
+    - "linkerd"
+    - "velero"
+
+# Notification configuration
+notifications:
+  slack:
+    enabled: false
+    webhookURL: ""
+    channel: "#alerts"
+  
+  email:
+    enabled: false
+    smtpServer: ""
+    smtpPort: 587
+    username: ""
+    password: ""
+    to: []
+  
+  webhook:
+    enabled: false
+    url: ""
+    headers: {}
+
+# Backup configuration
+backup:
+  enabled: false
+  type: "local"  # local, git, s3
+  location: "/tmp/kubejanitor-backups"
+  retentionDays: 7
+
+# Extra environment variables
+extraEnvVars: []
+# - name: FOO
+#   value: "bar"
+
+# Extra volumes
+extraVolumes: []
+# - name: extra-volume
+#   emptyDir: {}
+
+# Extra volume mounts
+extraVolumeMounts: []
+# - name: extra-volume
+#   mountPath: /opt/extra
+
+# Extra init containers
+initContainers: []
+
+# Extra sidecar containers
+sidecars: []
+
+# Custom labels for all resources
+labels: {}
+
+# Custom annotations for all resources
+annotations: {}
+
+# Priority class name
+priorityClassName: ""
+
+# Termination grace period
+terminationGracePeriodSeconds: 30
+
+# DNS policy
+dnsPolicy: ClusterFirst
+
+# Restart policy
+restartPolicy: Always
+
+# Host network
+hostNetwork: false
+
+# Host PID
+hostPID: false
+
+# Host IPC
+hostIPC: false
+
+# Share process namespace
+shareProcessNamespace: false

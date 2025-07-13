@@ -1,0 +1,21 @@
+apiVersion: v2
+name: kubejanitor-operator
+description: A Helm chart for KubeJanitor Operator - automated Kubernetes resource cleanup
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/automationpi/kubejanitor
+sources:
+  - https://github.com/automationpi/kubejanitor
+maintainers:
+  - name: AutomationPI Team
+    email: hello@automationpi.com
+keywords:
+  - kubernetes
+  - cleanup
+  - operator
+  - janitor
+  - resource-management
+annotations:
+  category: Infrastructure
+  licenses: Apache-2.0
