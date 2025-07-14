@@ -24,7 +24,7 @@ import (
 
 const (
 	// FinalizerName is the finalizer name for JanitorPolicy
-	FinalizerName = "janitorpolicy.ops.k8s.io/finalizer"
+	FinalizerName = "janitorpolicy.janitor.io/finalizer"
 
 	// ConditionTypeReady represents the ready condition
 	ConditionTypeReady = "Ready"
@@ -61,9 +61,9 @@ type JanitorPolicyReconciler struct {
 	metricsServer *metrics.Server
 }
 
-//+kubebuilder:rbac:groups=ops.k8s.io,resources=janitorpolicies,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=ops.k8s.io,resources=janitorpolicies/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=ops.k8s.io,resources=janitorpolicies/finalizers,verbs=update
+//+kubebuilder:rbac:groups=janitor.io,resources=janitorpolicies,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=janitor.io,resources=janitorpolicies/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=janitor.io,resources=janitorpolicies/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=pods;persistentvolumeclaims;configmaps;secrets;services;events,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps,resources=deployments;replicasets;daemonsets;statefulsets,verbs=get;list;watch
 //+kubebuilder:rbac:groups=batch,resources=jobs;cronjobs,verbs=get;list;watch;delete

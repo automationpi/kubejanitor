@@ -128,8 +128,8 @@ jobs:
 
     - name: Run helm security checks
       run: |
-        # Install datree using direct download
-        wget -O datree https://github.com/datreeio/datree/releases/latest/download/datree-cli_linux_x86_64
+        # Install datree using specific version
+        wget -O datree https://github.com/datreeio/datree/releases/download/1.9.19/datree-cli_1.9.19_linux_x86_64
         chmod +x datree
         sudo mv datree /usr/local/bin/
         
