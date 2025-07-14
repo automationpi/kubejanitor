@@ -17,8 +17,8 @@ linters:
     - gofmt
     - goimports
     - misspell
+    - typecheck
   disable:
-    - typecheck    # Disabled due to Go version mismatch between CI (1.23) and local (1.21)
     - staticcheck  # Disabled to reduce noise from dependency issues
 
 linters-settings:
@@ -38,5 +38,12 @@ issues:
       linters:
         - errcheck
         - gosec
+    # Exclude ApplyConfiguration type errors (common with k8s client-go version mismatches)
+    - text: "undefined.*ApplyConfiguration"
+      linters:
+        - typecheck
+    - text: "has no field or method (Kind|APIVersion|Name|GenerateName|Namespace|UID|ResourceVersion|Generation|CreationTimestamp|DeletionTimestamp|DeletionGracePeriodSeconds|Labels|Annotations|OwnerReferences|Finalizers)"
+      linters:
+        - typecheck
   max-issues-per-linter: 0
   max-same-issues: 0
