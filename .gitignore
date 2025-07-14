@@ -66,3 +66,6 @@ release/
 
 # Kind cluster configs
 kind-config.yaml
+
+# Linter cache
+.golangci-cache/
