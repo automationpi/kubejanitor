@@ -150,19 +150,47 @@ jobs:
       with:
         cluster_name: kubejanitor-test
         config: test/testdata/kind-config.yaml
+        kubectl_version: v1.28.0
+
+    - name: Verify kubectl configuration
+      run: |
+        echo "=== Verifying kubectl configuration ==="
+        kubectl config current-context
+        kubectl get nodes
+        kubectl cluster-info
 
     - name: Build and load Docker image
       run: |
         make docker-build IMG=kubejanitor:test
         kind load docker-image kubejanitor:test --name kubejanitor-test
 
+    - name: Download tools
+      run: |
+        make kustomize
+        make controller-gen
+
     - name: Deploy CRDs
       run: make install
 
     - name: Wait for cluster to be ready
       run: |
+        echo "=== Waiting for nodes to be ready ==="
         kubectl wait --for=condition=Ready nodes --all --timeout=300s
-        kubectl cluster-info
+        echo "=== Cluster status ==="
+        kubectl get nodes -o wide
+        kubectl get pods -A
+
+    - name: Deploy controller to cluster
+      run: |
+        echo "=== Deploying KubeJanitor controller ==="
+        cd config/manager && ../../bin/kustomize edit set image controller=kubejanitor:test
+        cd ../..
+        ./bin/kustomize build config/default | kubectl apply -f -
+        echo "=== Waiting for controller deployment ==="
+        kubectl wait --for=condition=Available deployment/kubejanitor-controller-manager -n kubejanitor-system --timeout=300s
+        echo "=== Controller status ==="
+        kubectl get pods -n kubejanitor-system
+        kubectl describe deployment kubejanitor-controller-manager -n kubejanitor-system
 
     - name: Run E2E tests
       run: make test-e2e
@@ -171,8 +199,12 @@ jobs:
       if: failure()
       run: |
         echo "=== Cluster Info ==="
-        kubectl cluster-info
+        kubectl cluster-info || echo "Failed to get cluster info"
         echo "=== All Pods ==="
-        kubectl get pods -A
+        kubectl get pods -A || echo "Failed to get pods"
         echo "=== All Events ==="
-        kubectl get events -A --sort-by='.lastTimestamp'
+        kubectl get events -A --sort-by='.lastTimestamp' || echo "Failed to get events"
+        echo "=== Controller Logs ==="
+        kubectl logs -n kubejanitor-system deployment/kubejanitor-controller-manager || echo "Failed to get controller logs"
+        echo "=== Describe Failed Pods ==="
+        kubectl describe pods -n kubejanitor-system || echo "No kubejanitor-system pods to describe"

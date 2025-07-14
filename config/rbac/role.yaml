@@ -43,7 +43,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - ops.k8s.io
+  - janitor.io
   resources:
   - janitorpolicies
   verbs:
@@ -55,13 +55,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - ops.k8s.io
+  - janitor.io
   resources:
   - janitorpolicies/finalizers
   verbs:
   - update
 - apiGroups:
-  - ops.k8s.io
+  - janitor.io
   resources:
   - janitorpolicies/status
   verbs:
