@@ -5,7 +5,7 @@
 *.so
 *.dylib
 bin/
-manager
+/manager
 
 # Test binary, built with `go test -c`
 *.test
@@ -64,8 +64,9 @@ release/
 # Docker
 .dockerignore
 
-# Kind cluster configs
+# Kind cluster configs (exclude test configs)
 kind-config.yaml
+!test/testdata/kind-config.yaml
 
 # Linter cache
 .golangci-cache/
